@@ -1,98 +1,71 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Switch = ({ isOn, handleToggle }) => {
+const Switch = ({ isOn, handleToggle, id }) => {
   return (
     <StyledWrapper>
       <div className="toggle-switch">
         <input 
           className="toggle-input" 
-          id="toggle" 
+          id={id} 
           type="checkbox" 
           checked={isOn} 
           onChange={handleToggle} 
         />
-        <label className="toggle-label" htmlFor="toggle" onClick={handleToggle}/>
+        <label className="toggle-label" htmlFor={id} />
       </div>
     </StyledWrapper>
   );
 }
 
 const StyledWrapper = styled.div`
-  /* Genel stil */
   .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 40px;
+    width: 44px;
     height: 24px;
     margin: 10px;
   }
 
-  /* Giriş stil */
-  .toggle-switch .toggle-input {
+  .toggle-input {
     display: none;
   }
 
-  /* Anahtarın stilinin etrafındaki etiketin stil */
-  .toggle-switch .toggle-label {
+  .toggle-label {
     position: absolute;
     top: 0;
     left: 0;
-    width: 40px;
+    width: 44px;
     height: 24px;
-    background-color: #2196F3;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 34px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
   }
 
-  /* Anahtarın yuvarlak kısmının stil */
-  .toggle-switch .toggle-label::before {
+  .toggle-label::before {
     content: "";
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     top: 2px;
     left: 2px;
-    background-color: #fff;
-    box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s;
+    background: linear-gradient(180deg, #fff 0%, #e2e8f0 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Anahtarın etkin hale gelmesindeki stil değişiklikleri */
-  .toggle-switch .toggle-input:checked + .toggle-label {
-    background-color: #4CAF50;
+  .toggle-input:checked + .toggle-label {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-color: rgba(99, 102, 241, 0.5);
   }
 
-  .toggle-switch .toggle-input:checked + .toggle-label::before {
-    transform: translateX(16px);
-  }
-
-  /* Light tema */
-  .toggle-switch.light .toggle-label {
-    background-color: #BEBEBE;
-  }
-
-  .toggle-switch.light .toggle-input:checked + .toggle-label {
-    background-color: #9B9B9B;
-  }
-
-  .toggle-switch.light .toggle-input:checked + .toggle-label::before {
-    transform: translateX(6px);
-  }
-
-  /* Dark tema */
-  .toggle-switch.dark .toggle-label {
-    background-color: #4B4B4B;
-  }
-
-  .toggle-switch.dark .toggle-input:checked + .toggle-label {
-    background-color: #717171;
-  }
-
-  .toggle-switch.dark .toggle-input:checked + .toggle-label::before {
-    transform: translateX(16px);
+  .toggle-input:checked + .toggle-label::before {
+    transform: translateX(20px);
+    background: #fff;
   }
 `;
 

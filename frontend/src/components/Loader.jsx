@@ -26,11 +26,11 @@ const Loader = () => {
 
 const StyledWrapper = styled.div`
   .loader {
-    --color-one: #ffbf48;
-    --color-two: #be4a1d;
-    --color-three: #ffbf4780;
-    --color-four: #bf4a1d80;
-    --color-five: #ffbf4740;
+    --color-one: #6366f1;
+    --color-two: #a855f7;
+    --color-three: rgba(99, 102, 241, 0.5);
+    --color-four: rgba(168, 85, 247, 0.5);
+    --color-five: rgba(99, 102, 241, 0.2);
     --time-animation: 2s;
     --size: 1; /* You can change the size */
     position: relative;
@@ -42,6 +42,7 @@ const StyledWrapper = styled.div`
       0 0 25px 0 var(--color-three),
       0 20px 50px 0 var(--color-four);
     animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+    backdrop-filter: blur(10px);
   }
 
   .loader::before {

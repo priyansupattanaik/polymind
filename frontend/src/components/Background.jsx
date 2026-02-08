@@ -53,7 +53,7 @@ export default function WebGLShader() {
     const initScene = () => {
       refs.scene = new THREE.Scene()
       refs.renderer = new THREE.WebGLRenderer({ canvas, alpha: true }) // Added alpha for safety
-      refs.renderer.setPixelRatio(window.devicePixelRatio)
+      refs.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
       // refs.renderer.setClearColor(new THREE.Color(0x000000)) // Let CSS handle background if needed, or keep black
 
       refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
