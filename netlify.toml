@@ -1,10 +1,10 @@
 [build]
-  # 1. Clean the functions directory
-  # 2. Create the directory
-  # 3. Copy the app code
-  # 4. IGNORE your requirements.txt and WRITE a fresh one automatically
-  # 5. Build the frontend
-  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && echo 'fastapi\nuvicorn\nhttpx\npython-dotenv\npydantic\nmangum' > netlify/functions/requirements.txt && npm run build"
+  # 1. Clean and recreate functions directory
+  # 2. Copy the backend code
+  # 3. Create an empty __init__.py to ensure Python treats it as a package
+  # 4. Use printf to reliably create the requirements.txt with newlines
+  # 5. Build the React frontend
+  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && touch netlify/functions/app/__init__.py && printf 'fastapi\nuvicorn\nhttpx\npython-dotenv\npydantic\nmangum\n' > netlify/functions/requirements.txt && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
