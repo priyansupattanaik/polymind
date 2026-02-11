@@ -19,14 +19,18 @@ const StyledImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.6; /* Dimmed slightly for text readability */
-  filter: contrast(1.1) saturate(1.1); /* Lively but cinematic */
-  transition: transform 20s ease-in-out;
+  opacity: 0.6;
+  filter: contrast(1.1) saturate(1.1);
+  will-change: transform;
   animation: slowZoom 60s infinite alternate;
 
   @keyframes slowZoom {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
+  }
+
+  @media (max-width: 600px) {
+    animation-duration: 90s;
   }
 `;
 
@@ -91,8 +95,9 @@ const Background = () => {
   const [sparkles, setSparkles] = useState([]);
 
   useEffect(() => {
-    // Generate static random sparkles on mount
-    const count = 30; // Number of sparkles
+    // Fewer sparkles on mobile for performance
+    const isMobile = window.matchMedia('(max-width: 600px)').matches;
+    const count = isMobile ? 12 : 30;
     const newSparkles = Array.from({ length: count }).map((_, i) => ({
       id: i,
       top: Math.random() * 100,

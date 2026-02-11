@@ -11,20 +11,24 @@ council_service = CouncilService()
 
 @router.post("/council", response_model=ChatResponse)
 async def conduct_council_meeting(request: ChatRequest):
+    # Sanitize prompt
+    clean_prompt = request.prompt.strip()
+    if not clean_prompt:
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
+
     # Enforce 500 character limit
-    if len(request.prompt) > 500:
+    if len(clean_prompt) > 500:
         raise HTTPException(status_code=400, detail="Input limit exceeded. Please limit your prompt to 500 characters.")
 
     async with httpx.AsyncClient() as client:
-        # 0. Dream Mode Override
-        if request.dream_mode:
-            request.active_models = ["or-seed"]
+        # 0. Dream Mode Override (use local var to avoid mutating the request)
+        models_to_use = ["or-seed"] if request.dream_mode else request.active_models
 
         # 1. Select Active Models
-        selected_members = council_service.get_active_members(request.active_models)
+        selected_members = council_service.get_active_members(models_to_use)
 
         # 2. Parallel Execution
-        tasks = [council_service.fetch_model_response(client, member, request.prompt) for member in selected_members]
+        tasks = [council_service.fetch_model_response(client, member, clean_prompt) for member in selected_members]
         results = await asyncio.gather(*tasks)
 
         # 3. Synthesis
@@ -33,7 +37,7 @@ async def conduct_council_meeting(request: ChatRequest):
             unified_answer = results[0]["content"] if results else "Dream generation failed."
             chairman_name = "Seedream Protocol"
         else:
-            unified_answer = await council_service.synthesize_responses(client, request.prompt, results)
+            unified_answer = await council_service.synthesize_responses(client, clean_prompt, results)
             chairman_name = "Llama 3.3 70B (Groq)"
 
         # 4. Format Output

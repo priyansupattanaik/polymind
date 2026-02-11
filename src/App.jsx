@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Background from './components/Background';
 import Loader from './components/Loader';
 import Header from './components/Header';
@@ -10,10 +10,24 @@ import ChatInput from './components/ChatInput';
 import MessageBubble from './components/MessageBubble';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useChat } from './hooks/useChat';
-import { ChevronDown, ChevronRight, User, Bot } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const getModelColor = (name) => {
+    if (!name) return '#D4AF37';
+    const n = name.toLowerCase();
+    if (n.includes('qwen')) return '#0984e3';
+    if (n.includes('gpt')) return '#6C5CE7';
+    if (n.includes('llama') || n.includes('versatile')) return '#FDCB6E';
+    if (n.includes('deepseek')) return '#00D2D3';
+    if (n.includes('aurora')) return '#FF6B6B';
+    if (n.includes('trinity')) return '#a29bfe';
+    if (n.includes('liquid')) return '#55efc4';
+    if (n.includes('seed')) return '#fd79a8';
+    return '#D4AF37';
+  };
   
   const {
     activeModels,
@@ -45,10 +59,14 @@ function App() {
 
         <MainDisplay>
           <ChatScrollArea ref={messageListRef}>
-            <WelcomeMessage $visible={messages.length === 0}>
-                <WelcomeTitle>POLY<span style={{color: 'var(--accent-cyan)'}}>MIND</span> COUNCIL</WelcomeTitle>
-                <WelcomeSubtitle>INITIALIZE PROTOCOL. SELECT MODELS. BEGIN QUERY.</WelcomeSubtitle>
-            </WelcomeMessage>
+            {messages.length === 0 && (
+              <WelcomeMessage>
+                  <WelcomeTitle>POLY<span style={{color: 'var(--accent-cyan)'}}>MIND</span> COUNCIL</WelcomeTitle>
+                  <WelcomeSubtitle>INITIALIZE PROTOCOL. SELECT MODELS. BEGIN QUERY.</WelcomeSubtitle>
+              </WelcomeMessage>
+            )}
+
+            {messages.length > 0 && <ChatSpacer />}
 
             {messages.map((msg, idx) => (
               <MessageGroup key={idx} $isUser={msg.role === 'user'}>
@@ -76,7 +94,7 @@ function App() {
                             <DeliberationLog>
                             {msg.individual_responses.map((resp, i) => (
                                 <LogEntry key={i}>
-                                <LogHeader>{resp.name}</LogHeader>
+                                <LogHeader $color={getModelColor(resp.name)}>{resp.name}</LogHeader>
                                 <LogContent>
                                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {resp.content || ''}
@@ -116,7 +134,6 @@ function App() {
 }
 
 // Styled Components
-// Styled Components
 const AppLayout = styled.div`
   display: flex;
   flex-direction: column;
@@ -152,20 +169,29 @@ const ChatScrollArea = styled.div`
   width: 100%;
   max-width: var(--stage-width);
   overflow-y: auto;
-  padding: 20px;
-  padding-bottom: 100px;
+  padding: 80px 16px 160px;
   display: flex;
   flex-direction: column;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+
+  @media (max-width: 600px) {
+    padding: 65px 10px calc(140px + var(--sab, 0px));
+  }
+`;
+
+const ChatSpacer = styled.div`
+  flex: 1;
 `;
 
 const WelcomeMessage = styled.div`
   text-align: center;
-  margin-top: 15vh;
-  margin-bottom: 40px;
-  opacity: ${props => props.$visible ? 1 : 0};
-  transform: translateY(${props => props.$visible ? 0 : '20px'});
-  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
   pointer-events: none;
 `;
 
@@ -207,18 +233,25 @@ const WelcomeSubtitle = styled.p`
   }
 `;
 
+const userSlideIn = keyframes`
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+`;
+
+const aiSlideIn = keyframes`
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const MessageGroup = styled.div`
   display: flex;
-  gap: 0; /* No gap needed for script layout */
-  margin-bottom: 32px;
+  gap: 0;
+  margin-bottom: 10px;
   width: 100%;
   opacity: 0;
-  animation: fadeIn 0.6s ease forwards;
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  animation: ${props => props.$isUser ? userSlideIn : aiSlideIn} 
+    ${props => props.$isUser ? '0.25s' : '0.4s'} 
+    cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 `;
 
 const ContentWrapper = styled.div`
@@ -236,27 +269,39 @@ const InputArea = styled.div`
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  padding: 0 0 30px 0;
+  padding: 0 0 calc(24px + var(--sab, 0px)) 0;
   pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -20px;
+    right: -20px;
+    height: 160px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: -1;
+  }
 
   & > * {
     pointer-events: auto;
   }
 
   @media (max-width: 600px) {
-    padding: 0 0 16px 0;
+    padding: 0 0 calc(10px + var(--sab, 0px)) 0;
   }
 `;
 
 // Metadata and logs - Styled to look like Technical Specs
 const MetaData = styled.div`
-  margin-top: 8px;
-  margin-left: 16px; 
+  margin-top: 6px;
+  margin-left: 12px;
   padding-left: 12px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const ChairmanInfo = styled.div`
@@ -325,11 +370,12 @@ const LogEntry = styled.div`
 `;
 
 const LogHeader = styled.div`
-  font-family: var(--font-title);
-  font-size: 0.7rem;
-  color: var(--cinema-gold);
+  font-family: var(--font-header);
+  font-size: 0.75rem;
+  color: ${props => props.$color || 'var(--cinema-gold)'};
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  font-weight: 600;
 `;
 
 const LogContent = styled.div`

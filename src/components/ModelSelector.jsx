@@ -1,215 +1,267 @@
 import React from 'react';
-import styled from 'styled-components';
-import { X, Cpu, Zap, Brain, Shield, Rocket, Sparkles, Box } from 'lucide-react';
+import styled, { keyframes, css } from 'styled-components';
+import { X, Cpu, Zap, Brain, Shield, Sparkles, Box } from 'lucide-react';
 import Switch from './Switch';
 
 const ModelSelector = ({ isOpen, onClose, availableModels, activeModels, toggleModel }) => {
   if (!isOpen) return null;
 
   const getModelIcon = (id) => {
-    if (id.includes('llama')) return <Brain size={24} color="#FDCB6E" />;
-    if (id.includes('mixtral') || id.includes('mistral')) return <Zap size={24} color="#00D2D3" />;
-    if (id.includes('gemma')) return <Sparkles size={24} color="#d63031" />;
-    if (id.includes('qwen')) return <Shield size={24} color="#0984e3" />;
-    if (id.includes('gpt')) return <Cpu size={24} color="#6C5CE7" />;
-    return <Box size={24} color="#b2bec3" />;
+    if (id.includes('llama') || id.includes('versatile')) return <Brain size={20} />;
+    if (id.includes('mixtral') || id.includes('mistral')) return <Zap size={20} />;
+    if (id.includes('gemma') || id.includes('sparkle')) return <Sparkles size={20} />;
+    if (id.includes('qwen')) return <Shield size={20} />;
+    if (id.includes('gpt') || id.includes('deepseek')) return <Cpu size={20} />;
+    if (id.includes('aurora') || id.includes('trinity')) return <Zap size={20} />;
+    if (id.includes('liquid')) return <Sparkles size={20} />;
+    if (id.includes('seed')) return <Sparkles size={20} />;
+    return <Box size={20} />;
   };
+
+  const getModelColor = (id) => {
+    if (id.includes('qwen')) return '#0984e3';
+    if (id.includes('gpt')) return '#6C5CE7';
+    if (id.includes('llama') || id.includes('versatile')) return '#FDCB6E';
+    if (id.includes('deepseek')) return '#00D2D3';
+    if (id.includes('aurora')) return '#FF6B6B';
+    if (id.includes('trinity')) return '#a29bfe';
+    if (id.includes('liquid')) return '#55efc4';
+    if (id.includes('seed')) return '#fd79a8';
+    return '#b2bec3';
+  };
+
+  const activeCount = activeModels.length;
 
   return (
     <Overlay onClick={onClose}>
-      <Container onClick={e => e.stopPropagation()} className="glass-panel">
-        <Header>
-            <Title>
-                <Cpu size={28} />
-                <span>COUNCIL PROTOCOL</span>
-            </Title>
-            <CloseButton onClick={onClose}>
-                <X size={24} />
-            </CloseButton>
-        </Header>
-        
-        <Grid>
-            {availableModels.map(model => {
-                const isActive = activeModels.includes(model.id);
-                return (
-                    <Card key={model.id} $isActive={isActive} onClick={() => toggleModel(model.id)}>
-                        <CardHeader>
-                            <IconWrapper $isActive={isActive}>
-                                {getModelIcon(model.id)}
-                            </IconWrapper>
-                            <Switch 
-                                isOn={isActive} 
-                                handleToggle={() => toggleModel(model.id)}
-                                id={`switch-${model.id}`}
-                            />
-                        </CardHeader>
-                        <CardBody>
-                            <ModelName $isActive={isActive}>{model.name}</ModelName>
-                            <ModelId>{model.id}</ModelId>
-                            <StatusIndicator $isActive={isActive}>
-                                {isActive ? 'ONLINE' : 'OFFLINE'}
-                            </StatusIndicator>
-                        </CardBody>
-                    </Card>
-                );
-            })}
-        </Grid>
-      </Container>
+      <Panel onClick={e => e.stopPropagation()}>
+        <PanelHeader>
+          <HeaderLeft>
+            <HeaderTitle>Council Models</HeaderTitle>
+            <ActiveBadge>{activeCount} active</ActiveBadge>
+          </HeaderLeft>
+          <CloseBtn onClick={onClose} title="Close">
+            <X size={18} />
+          </CloseBtn>
+        </PanelHeader>
+
+        <ModelList>
+          {availableModels.map((model, index) => {
+            const isActive = activeModels.includes(model.id);
+            const color = getModelColor(model.id);
+            return (
+              <ModelRow 
+                key={model.id} 
+                $isActive={isActive}
+                $color={color}
+                $index={index}
+                onClick={() => toggleModel(model.id)}
+              >
+                <ModelLeft>
+                  <IconCircle $isActive={isActive} $color={color}>
+                    {getModelIcon(model.id)}
+                  </IconCircle>
+                  <ModelInfo>
+                    <ModelName $isActive={isActive}>{model.name}</ModelName>
+                    <ModelIdText>{model.id}</ModelIdText>
+                  </ModelInfo>
+                </ModelLeft>
+                <Switch 
+                  checked={isActive} 
+                  onChange={() => toggleModel(model.id)} 
+                />
+              </ModelRow>
+            );
+          })}
+        </ModelList>
+      </Panel>
     </Overlay>
   );
 };
 
+// Animations
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const slideIn = keyframes`
+  from { transform: translateY(20px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+`;
+
+const rowAppear = keyframes`
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+`;
+
+// Styled Components
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(10, 22, 40, 0.8);
-  backdrop-filter: blur(16px);
-  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s ease;
-  
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  animation: ${fadeIn} 0.2s ease;
+  padding: 20px;
 `;
 
-const Container = styled.div`
-  width: 90%;
-  max-width: 1000px;
-  max-height: 85vh;
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+const Panel = styled.div`
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
+  animation: ${slideIn} 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 
-  @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @media (max-width: 520px) {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 16px;
+  }
 `;
 
-const Header = styled.div`
-  padding: 32px 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+const PanelHeader = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  background: rgba(0,0,0,0.2);
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  @media (max-width: 480px) {
+    padding: 16px 18px;
+  }
 `;
 
-const Title = styled.div`
+const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-family: var(--font-header);
-  font-size: 1.5rem;
-  color: var(--text-main);
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  
-  svg { color: var(--accent-coral); }
+  gap: 12px;
 `;
 
-const CloseButton = styled.button`
+const HeaderTitle = styled.h2`
+  margin: 0;
+  font-family: var(--font-header);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-proj);
+  letter-spacing: 0.5px;
+`;
+
+const ActiveBadge = styled.span`
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+  background: rgba(0, 210, 211, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+`;
+
+const CloseBtn = styled.button`
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
+  color: var(--text-dim);
   cursor: pointer;
-  transition: all 0.2s;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  &:hover { 
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff; 
-    transform: rotate(90deg); 
-  }
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-  padding: 40px;
-  overflow-y: auto;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    padding: 20px;
-    gap: 16px;
-  }
-`;
-
-const Card = styled.div`
-  background: ${props => props.$isActive ? 'rgba(255, 107, 107, 0.05)' : 'rgba(255,255,255,0.02)'};
-  border: 1px solid ${props => props.$isActive ? 'var(--accent-coral)' : 'rgba(255,255,255,0.05)'};
-  border-radius: 20px;
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.2s;
 
   &:hover {
-    transform: translateY(-4px);
-    background: ${props => props.$isActive ? 'rgba(255, 107, 107, 0.08)' : 'rgba(255,255,255,0.05)'};
-    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-proj);
+    transform: rotate(90deg);
   }
 `;
 
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-`;
-
-const IconWrapper = styled.div`
-  padding: 10px;
-  border-radius: 10px;
-  background: ${props => props.$isActive ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.05)'};
-  opacity: ${props => props.$isActive ? 1 : 0.5};
-`;
-
-const CardBody = styled.div`
+const ModelList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  padding: 8px;
+  overflow-y: auto;
+  gap: 2px;
 `;
 
-const ModelName = styled.h3`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${props => props.$isActive ? '#fff' : 'var(--text-muted)'};
-`;
+const ModelRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: ${rowAppear} 0.3s ease both;
+  animation-delay: ${props => props.$index * 0.04}s;
+  background: ${props => props.$isActive ? 'rgba(255, 255, 255, 0.03)' : 'transparent'};
 
-const ModelId = styled.span`
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  opacity: 0.7;
-`;
-
-const StatusIndicator = styled.span`
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  margin-top: 12px;
-  display: inline-block;
-  color: ${props => props.$isActive ? 'var(--accent-cyan)' : 'var(--text-muted)'};
-  text-shadow: ${props => props.$isActive ? '0 0 8px var(--accent-cyan)' : 'none'};
-  
-  &::before {
-    content: '●';
-    margin-right: 6px;
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
   }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+  }
+`;
+
+const ModelLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+`;
+
+const IconCircle = styled.div`
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${props => props.$isActive ? `${props.$color}18` : 'rgba(255, 255, 255, 0.04)'};
+  color: ${props => props.$isActive ? props.$color : 'var(--text-dim)'};
+  transition: all 0.25s ease;
+`;
+
+const ModelInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+const ModelName = styled.span`
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: ${props => props.$isActive ? 'var(--text-proj)' : 'var(--text-muted)'};
+  transition: color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const ModelIdText = styled.span`
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  opacity: 0.6;
 `;
 
 export default ModelSelector;

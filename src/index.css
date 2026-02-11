@@ -42,26 +42,49 @@
   /* Spacing */
   --stage-width: 900px;
   --header-height: 80px;
+
+  /* iOS Safe Area */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
 }
 
 /* Global Scrollbar Hide */
 *, *::before, *::after {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  box-sizing: border-box;
 }
 *::-webkit-scrollbar {
   display: none;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
   background-color: var(--bg-void);
   color: var(--text-proj);
   font-family: var(--font-main);
-  overflow: hidden; /* App handles scrolling */
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
 }
 
 /* Utilities */
@@ -83,6 +106,30 @@ body {
 }
 
 /* Input/Button Resets */
-input, button, textarea {
+input, button, textarea, select {
   font-family: var(--font-main);
+}
+
+/* Prevent iOS auto-zoom on textarea focus (needs 16px minimum) */
+textarea {
+  font-size: 16px;
+}
+
+/* Prevent iOS tap highlight */
+a, button, input, textarea, select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Responsive stage width */
+@media (max-width: 960px) {
+  :root {
+    --stage-width: 100%;
+  }
+}
+
+/* iOS Safari: use dvh units when supported */
+@supports (height: 100dvh) {
+  html, body, #root {
+    height: 100dvh;
+  }
 }

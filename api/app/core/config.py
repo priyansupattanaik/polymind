@@ -15,8 +15,15 @@ class Settings:
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY")
 
     def check_keys(self):
+        missing = []
+        if not self.GROQ_API_KEY:
+            missing.append("GROQ_API_KEY")
+        if not self.NVIDIA_API_KEY:
+            missing.append("NVIDIA_API_KEY")
         if not self.OPENROUTER_API_KEY:
-            print("WARNING: OPENROUTER_API_KEY not found. OpenRouter models will fail.")
+            missing.append("OPENROUTER_API_KEY")
+        if missing:
+            print(f"WARNING: Missing API keys: {', '.join(missing)}. Associated models will fail.")
 
 settings = Settings()
 settings.check_keys()

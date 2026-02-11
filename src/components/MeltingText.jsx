@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import styled from 'styled-components';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 const MeltingText = ({
   text = "PolyMind",
@@ -9,25 +8,9 @@ const MeltingText = ({
   accentColor = "#4F46E5",
 }) => {
   const containerRef = useRef(null);
-  
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springConfig = { damping: 25, stiffness: 150 };
-  const smoothMouseX = useSpring(mouseX, springConfig);
-  const smoothMouseY = useSpring(mouseY, springConfig);
-
-  const handleMouseMove = (e) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      mouseX.set(x);
-      mouseY.set(y);
-    }
-  };
 
   return (
-    <Container ref={containerRef} onMouseMove={handleMouseMove}>
+    <Container ref={containerRef}>
       <VisuallyHidden>
         {/* SVG Filters Definition */}
         <svg className="absolute w-0 h-0">
@@ -152,16 +135,18 @@ const TextGroup = styled.div`
 const StyledHeading = styled.h1`
   font-family: var(--font-header, 'Oswald', sans-serif);
   font-weight: 900;
-  font-size: 2.5rem; /* Scaled down for header pill */
+  font-size: 1.6rem;
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   text-align: center;
   user-select: none;
   position: absolute;
   width: 100%;
   color: ${props => props.$color || 'inherit'};
-  
-  /* Reset relative positioning for the main layer which overrides this */
+
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
 `;
 
 const GradientText = styled.span`

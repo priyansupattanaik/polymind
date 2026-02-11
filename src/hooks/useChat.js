@@ -1,5 +1,5 @@
 
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
 const AVAILABLE_MODELS = [
@@ -29,7 +29,7 @@ export const useChat = () => {
 
   const toggleDreamMode = () => setDreamMode(prev => !prev);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (messageListRef.current) {
       messageListRef.current.scrollTo({
         top: messageListRef.current.scrollHeight,

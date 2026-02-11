@@ -17,7 +17,7 @@ class CouncilService:
                 "model": "qwen/qwen3-32b",
                 "params": {
                     "temperature": 0.6,
-                    "max_completion_tokens": 4096,
+                    "max_completion_tokens": 1024,
                     "top_p": 0.95,
                     "reasoning_effort": "default"
                 }
@@ -28,7 +28,7 @@ class CouncilService:
                 "model": "openai/gpt-oss-20b",
                 "params": {
                     "temperature": 1,
-                    "max_completion_tokens": 8192,
+                    "max_completion_tokens": 1024,
                     "top_p": 1,
                     "reasoning_effort": "medium"
                 }
@@ -47,18 +47,21 @@ class CouncilService:
                 "name": "Aurora Alpha (OpenRouter)", 
                 "provider": "openrouter", 
                 "model": "openrouter/aurora-alpha",
+                "params": { "max_tokens": 512 },
                 "extra_body": { "reasoning": { "enabled": True } }
             },
             "or-trinity": {
                 "name": "Trinity Large Preview (OpenRouter)", 
                 "provider": "openrouter", 
                 "model": "arcee-ai/trinity-large-preview:free",
+                "params": { "max_tokens": 512 },
                 "extra_body": { "reasoning": { "enabled": True } }
             },
             "or-liquid": {
                 "name": "Liquid LFM 2.5 (OpenRouter)", 
                 "provider": "openrouter", 
-                "model": "liquid/lfm-2.5-1.2b-thinking:free"
+                "model": "liquid/lfm-2.5-1.2b-thinking:free",
+                "params": { "max_tokens": 512 }
             },
             "or-seed": {
                 "name": "Seedream 4.5 (OpenRouter)", 
@@ -73,7 +76,7 @@ class CouncilService:
                 "params": {
                     "temperature": 0.2,
                     "top_p": 0.7,
-                    "max_tokens": 8192,
+                    "max_tokens": 1024,
                     "seed": 42
                 },
                 "extra_body": {
@@ -116,7 +119,8 @@ class CouncilService:
                 )
             return {"name": member["name"], "content": "Provider not supported."}
         except Exception as e:
-            return {"name": member["name"], "content": f"Error: {str(e)}"}
+            print(f"Error fetching response from {member['name']}: {e}")
+            return {"name": member["name"], "content": f"Model '{member['name']}' encountered an error. Please try again."}
 
     async def _call_provider(self, client: httpx.AsyncClient, url: str, key: str, member_config: Dict[str, Any], prompt: str):
         if not key:
@@ -155,6 +159,11 @@ class CouncilService:
                 message = data["choices"][0]["message"]
                 content = message.get("content", "")
                 
+                # Fallback for thinking models (e.g. Liquid LFM) that return
+                # their output in reasoning_content instead of content
+                if not content:
+                    content = message.get("reasoning_content", "")
+                
                 # Handle Seedream/OpenRouter image generation response format
                 if not content and "images" in message:
                     try:
@@ -167,14 +176,16 @@ class CouncilService:
                         print(f"Error parsing image response: {e}")
                         content = "Error generating image."
 
-                return {"name": member_config["name"], "content": content}
+                return {"name": member_config["name"], "content": content if content else "No response generated."}
             else:
                  return {"name": member_config["name"], "content": "No content returned."}
 
         except httpx.HTTPStatusError as e:
-            return {"name": member_config["name"], "content": f"API Error: {e.response.status_code} - {e.response.text}"}
+            print(f"API Error for {member_config['name']}: {e.response.status_code} - {e.response.text}")
+            return {"name": member_config["name"], "content": f"API returned an error (status {e.response.status_code}). Please try again later."}
         except Exception as e:
-            return {"name": member_config["name"], "content": f"Connection Error: {str(e)}"}
+            print(f"Connection Error for {member_config['name']}: {e}")
+            return {"name": member_config["name"], "content": "Connection error. Please check your network and try again."}
 
     async def synthesize_responses(self, client: httpx.AsyncClient, prompt: str, results: List[Dict[str, Any]]):
         if not results:
