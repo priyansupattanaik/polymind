@@ -1,24 +1,25 @@
 [build]
-  # 1. Clean and recreate functions directory
-  # 2. Copy the backend code
-  # 3. Create an empty __init__.py to ensure Python treats it as a package
-  # 4. Use printf to reliably create the requirements.txt with newlines
-  # 5. Build the React frontend
-  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && touch netlify/functions/app/__init__.py && printf 'fastapi\nuvicorn\nhttpx\npython-dotenv\npydantic\nmangum\n' > netlify/functions/requirements.txt && npm run build"
+  # AUTOMATION PIPELINE:
+  # 1. Clean/Prepare directories
+  # 2. Copy Backend Code
+  # 3. Generate requirements.txt (Prevents corruption)
+  # 4. Generate main.py (Prevents missing file error)
+  # 5. Build Frontend
+  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && touch netlify/functions/app/__init__.py && printf 'fastapi\nuvicorn\nhttpx\npython-dotenv\npydantic\nmangum\n' > netlify/functions/requirements.txt && printf 'from mangum import Mangum\nfrom app.main import app\n\nhandler = Mangum(app)\n' > netlify/functions/main.py && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
 [build.environment]
   PYTHON_VERSION = "3.9"
 
-# Redirect API calls to the Python function
+# API Routing
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/main"
   status = 200
   force = true
 
-# Catch-all for React Router
+# React Routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
