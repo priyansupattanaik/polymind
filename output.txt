@@ -1,0 +1,10 @@
+Status Code: 200
+Headers:
+  date: Wed, 11 Feb 2026 17:35:32 GMT
+  server: uvicorn
+  content-length: 248
+  content-type: application/json
+  access-control-allow-origin: *
+
+Body:
+{"unified_response":"API returned an error (status 401). Please try again later.","individual_responses":[{"name":"Qwen 3 32B (Groq)","content":"API returned an error (status 401). Please try again later."}],"chairman_model":"Llama 3.3 70B (Groq)"}
