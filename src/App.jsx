@@ -9,11 +9,13 @@ import ModelSelector from './components/ModelSelector';
 import ChatInput from './components/ChatInput';
 import MessageBubble from './components/MessageBubble';
 import ErrorBoundary from './components/ErrorBoundary';
+import ChatHistory from './components/ChatHistory';
 import { useChat } from './hooks/useChat';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, History, Plus } from 'lucide-react';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   
   const getModelColor = (name) => {
     if (!name) return '#D4AF37';
@@ -40,7 +42,12 @@ function App() {
     setInput,
     toggleModel,
     toggleDreamMode,
-    sendMessage
+    sendMessage,
+    conversations,
+    activeConversationId,
+    startNewChat,
+    switchConversation,
+    deleteConversation,
   } = useChat();
 
   return (
@@ -48,6 +55,25 @@ function App() {
       <Background />
       <AppLayout>
         <Header />
+
+        <TopBar>
+          <TopBarBtn onClick={() => setIsHistoryOpen(true)} aria-label="Chat history">
+            <History size={16} />
+          </TopBarBtn>
+          <TopBarBtn onClick={startNewChat} aria-label="New chat">
+            <Plus size={16} />
+          </TopBarBtn>
+        </TopBar>
+
+        <ChatHistory
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onNewChat={startNewChat}
+          onSwitchConversation={switchConversation}
+          onDeleteConversation={deleteConversation}
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+        />
 
         <ModelSelector 
           isOpen={isModalOpen}
@@ -134,6 +160,43 @@ function App() {
 }
 
 // Styled Components
+
+const TopBar = styled.div`
+  position: fixed;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  gap: 6px;
+  z-index: 90;
+`;
+
+const TopBarBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(16px);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.25s;
+
+  &:hover {
+    color: var(--cinema-gold);
+    border-color: rgba(250, 204, 21, 0.25);
+    background: rgba(10, 10, 10, 0.75);
+    transform: scale(1.08);
+  }
+
+  @media (max-width: 480px) {
+    width: 30px;
+    height: 30px;
+  }
+`;
+
 const AppLayout = styled.div`
   display: flex;
   flex-direction: column;

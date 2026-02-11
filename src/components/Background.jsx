@@ -116,7 +116,7 @@ const Background = () => {
 
   return (
     <BackgroundContainer>
-      <StyledImage src={bgImage} alt="Cinematic Background" loading="lazy" />
+      <StyledImage src={bgImage} alt="Cinematic Background" />
       <SparkleContainer>
         {sparkles.map(s => (
           <Sparkle 

@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AVAILABLE_MODELS = [
@@ -13,22 +13,39 @@ const AVAILABLE_MODELS = [
   { id: 'or-seed', name: 'Seedream 4.5 (OpenRouter)' },
 ];
 
+const DEFAULT_ACTIVE_MODELS = ['groq-qwen', 'groq-versatile', 'groq-gptoss', 'nvidia-deepseek', 'or-aurora', 'or-trinity', 'or-liquid'];
+
+let nextConversationId = 1;
+
+const createConversation = () => ({
+  id: nextConversationId++,
+  title: 'New Chat',
+  messages: [],
+  createdAt: Date.now(),
+});
+
 export const useChat = () => {
-  const [activeModels, setActiveModels] = useState(['groq-qwen', 'groq-versatile', 'groq-gptoss', 'nvidia-deepseek', 'or-aurora', 'or-trinity', 'or-liquid']);
+  const [conversations, setConversations] = useState(() => [createConversation()]);
+  const [activeConversationId, setActiveConversationId] = useState(1);
+  const [activeModels, setActiveModels] = useState(DEFAULT_ACTIVE_MODELS);
   const [dreamMode, setDreamMode] = useState(false);
-  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messageListRef = useRef(null);
 
+  // Derived: current conversation's messages
+  const activeConversation = conversations.find(c => c.id === activeConversationId);
+  const messages = activeConversation ? activeConversation.messages : [];
+
   const toggleModel = (id) => {
-    setActiveModels(prev => 
+    setActiveModels(prev =>
       prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
     );
   };
 
   const toggleDreamMode = () => setDreamMode(prev => !prev);
 
+  // Auto-scroll on new messages
   useEffect(() => {
     if (messageListRef.current) {
       messageListRef.current.scrollTo({
@@ -38,22 +55,44 @@ export const useChat = () => {
     }
   }, [messages, loading]);
 
+  // Update messages for the active conversation
+  const updateActiveMessages = useCallback((updater) => {
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === activeConversationId
+          ? { ...conv, messages: typeof updater === 'function' ? updater(conv.messages) : updater }
+          : conv
+      )
+    );
+  }, [activeConversationId]);
+
+  // Auto-title: set title from the first user message
+  const updateTitle = useCallback((text) => {
+    const title = text.length > 35 ? text.slice(0, 35) + '…' : text;
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === activeConversationId && conv.title === 'New Chat'
+          ? { ...conv, title }
+          : conv
+      )
+    );
+  }, [activeConversationId]);
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
     const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    updateActiveMessages(prev => [...prev, userMessage]);
+    updateTitle(input.trim());
     setInput('');
     setLoading(true);
 
     try {
-      // Updated endpoint to match new backend structure
       const response = await axios.post('/api/council', {
         prompt: userMessage.content,
         active_models: activeModels,
         dream_mode: dreamMode
       });
-
 
       const aiMessage = {
         role: 'assistant',
@@ -62,19 +101,55 @@ export const useChat = () => {
         individual_responses: response.data.individual_responses || []
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      updateActiveMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error communicating with council:", error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "The Council is currently unavailable. Please check the backend connection." 
+      updateActiveMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "The Council is currently unavailable. Please check the backend connection."
       }]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Start a new conversation
+  const startNewChat = useCallback(() => {
+    const newConv = createConversation();
+    setConversations(prev => [newConv, ...prev]);
+    setActiveConversationId(newConv.id);
+    setInput('');
+    setLoading(false);
+  }, []);
+
+  // Switch to an existing conversation
+  const switchConversation = useCallback((id) => {
+    if (id !== activeConversationId) {
+      setActiveConversationId(id);
+      setInput('');
+      setLoading(false);
+    }
+  }, [activeConversationId]);
+
+  // Delete a conversation
+  const deleteConversation = useCallback((id) => {
+    setConversations(prev => {
+      const remaining = prev.filter(c => c.id !== id);
+      // If deleting the active one, switch to the first remaining or create new
+      if (id === activeConversationId) {
+        if (remaining.length === 0) {
+          const newConv = createConversation();
+          setActiveConversationId(newConv.id);
+          return [newConv];
+        }
+        setActiveConversationId(remaining[0].id);
+      }
+      return remaining;
+    });
+  }, [activeConversationId]);
+
   return {
+    // Current chat
     activeModels,
     availableModels: AVAILABLE_MODELS,
     messages,
@@ -85,6 +160,12 @@ export const useChat = () => {
     setInput,
     toggleModel,
     toggleDreamMode,
-    sendMessage
+    sendMessage,
+    // Multi-conversation
+    conversations,
+    activeConversationId,
+    startNewChat,
+    switchConversation,
+    deleteConversation,
   };
 };
