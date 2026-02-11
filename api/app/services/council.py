@@ -156,16 +156,28 @@ class CouncilService:
             
             # Handle standard OpenAI format choices
             if "choices" in data and len(data["choices"]) > 0:
-                message = data["choices"][0]["message"]
-                content = message.get("content", "")
+                choice = data["choices"][0]
+                message = choice.get("message", {})
+                content = message.get("content", "") or ""
                 
-                # Fallback for thinking models (e.g. Liquid LFM) that return
-                # their output in reasoning_content instead of content
-                if not content:
-                    content = message.get("reasoning_content", "")
+                # Fallback 1: reasoning_content (thinking models)
+                if not content.strip():
+                    content = message.get("reasoning_content", "") or ""
+                
+                # Fallback 2: reasoning field (some OpenRouter models)
+                if not content.strip():
+                    content = message.get("reasoning", "") or ""
+
+                # Fallback 3: text field at choice level
+                if not content.strip():
+                    content = choice.get("text", "") or ""
+                
+                # Debug: log the full response structure when all fallbacks fail
+                if not content.strip():
+                    print(f"[DEBUG] Empty content for {member_config['name']}. Full choice: {json.dumps(choice, default=str)[:2000]}")
                 
                 # Handle Seedream/OpenRouter image generation response format
-                if not content and "images" in message:
+                if not content.strip() and "images" in message:
                     try:
                         images = message["images"]
                         if images and len(images) > 0:
@@ -176,8 +188,9 @@ class CouncilService:
                         print(f"Error parsing image response: {e}")
                         content = "Error generating image."
 
-                return {"name": member_config["name"], "content": content if content else "No response generated."}
+                return {"name": member_config["name"], "content": content.strip() if content.strip() else "No response generated."}
             else:
+                 print(f"[DEBUG] No choices for {member_config['name']}. Full data keys: {list(data.keys())}")
                  return {"name": member_config["name"], "content": "No content returned."}
 
         except httpx.HTTPStatusError as e:
