@@ -13,6 +13,10 @@ const BackgroundContainer = styled.div`
   z-index: -1;
   overflow: hidden;
   background-color: var(--bg-void);
+
+  @supports (height: 100dvh) {
+    height: 100dvh;
+  }
 `;
 
 const StyledImage = styled.img`

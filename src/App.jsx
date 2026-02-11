@@ -141,6 +141,10 @@ const AppLayout = styled.div`
   width: 100vw;
   position: relative;
   overflow: hidden;
+
+  @supports (height: 100dvh) {
+    height: 100dvh;
+  }
   
   /* Cinematic Vignette Overlay via CSS */
   &::after {
