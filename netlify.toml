@@ -1,9 +1,10 @@
 [build]
-  # 1. Clear old function files to prevent caching errors
-  # 2. Copy backend/app into netlify/functions/app
-  # 3. Copy requirements and add mangum
-  # 4. Build the React frontend
-  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && cp backend/requirements.txt netlify/functions/requirements.txt && npm run build"
+  # 1. Clean the functions directory
+  # 2. Create the directory
+  # 3. Copy the app code
+  # 4. IGNORE your requirements.txt and WRITE a fresh one automatically
+  # 5. Build the frontend
+  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && echo 'fastapi\nuvicorn\nhttpx\npython-dotenv\npydantic\nmangum' > netlify/functions/requirements.txt && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
@@ -17,7 +18,7 @@
   status = 200
   force = true
 
-# Catch-all for React Router (must be AFTER the API redirect)
+# Catch-all for React Router
 [[redirects]]
   from = "/*"
   to = "/index.html"
