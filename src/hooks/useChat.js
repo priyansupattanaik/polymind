@@ -104,9 +104,23 @@ export const useChat = () => {
       updateActiveMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error communicating with council:", error);
+      let errorMessage = "The Council is currently unavailable. Please check the backend connection.";
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        errorMessage = `Error ${error.response.status}: ${error.response.data.detail || error.response.statusText}`;
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "No response received from the Council. Please check your network connection.";
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        errorMessage = `Error: ${error.message}`;
+      }
+
       updateActiveMessages(prev => [...prev, {
         role: 'assistant',
-        content: "The Council is currently unavailable. Please check the backend connection."
+        content: errorMessage
       }]);
     } finally {
       setLoading(false);

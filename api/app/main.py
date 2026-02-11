@@ -10,7 +10,11 @@ app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 # CORS: restrict to known origins
 _default_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 _extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
-allowed_origins = _default_origins + _extra_origins
+# If no allowed origins are specified, default to allowing all (for development/preview simplicity)
+if not _extra_origins:
+    allowed_origins = ["*"]
+else:
+    allowed_origins = _default_origins + _extra_origins
 
 app.add_middleware(
     CORSMiddleware,
