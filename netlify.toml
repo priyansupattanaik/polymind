@@ -1,8 +1,16 @@
-
-
 [build]
-  command = "npm run build"
+  command = "cp -r backend/app netlify/functions/app && cp backend/requirements.txt netlify/functions/requirements.txt && echo '\nmangum' >> netlify/functions/requirements.txt && npm run build"
   publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/main"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
