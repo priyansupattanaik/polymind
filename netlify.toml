@@ -1,17 +1,23 @@
 [build]
-  command = "cp -r backend/app netlify/functions/app && cp backend/requirements.txt netlify/functions/requirements.txt && echo '\nmangum' >> netlify/functions/requirements.txt && npm run build"
+  # 1. Clear old function files to prevent caching errors
+  # 2. Copy backend/app into netlify/functions/app
+  # 3. Copy requirements and add mangum
+  # 4. Build the React frontend
+  command = "rm -rf netlify/functions/app && mkdir -p netlify/functions && cp -r backend/app netlify/functions/app && cp backend/requirements.txt netlify/functions/requirements.txt && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
 [build.environment]
   PYTHON_VERSION = "3.9"
 
+# Redirect API calls to the Python function
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/main"
   status = 200
   force = true
 
+# Catch-all for React Router (must be AFTER the API redirect)
 [[redirects]]
   from = "/*"
   to = "/index.html"
