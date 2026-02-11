@@ -88,7 +88,8 @@ export const useChat = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/council', {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await axios.post(`${apiUrl}/council`, {
         prompt: userMessage.content,
         active_models: activeModels,
         dream_mode: dreamMode
