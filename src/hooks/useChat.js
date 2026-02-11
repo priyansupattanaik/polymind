@@ -104,6 +104,18 @@ export const useChat = () => {
       updateActiveMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error communicating with council:", error);
+      
+      // Detailed logging for debugging
+      if (error.response) {
+          console.error("Response Data:", error.response.data);
+          console.error("Response Status:", error.response.status);
+          console.error("Response Headers:", error.response.headers);
+      } else if (error.request) {
+          console.error("Request made but no response received:", error.request);
+      } else {
+          console.error("Error Message:", error.message);
+      }
+
       let errorMessage = "The Council is currently unavailable. Please check the backend connection.";
       
       if (error.response) {
