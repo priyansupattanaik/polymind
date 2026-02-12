@@ -3,15 +3,20 @@
   # 1. Build Frontend (Functions are already in netlify/functions)
   command = "npm run build"
   publish = "dist"
-  functions = "functions"
+  functions = "netlify/functions"
 
 [build.environment]
   PYTHON_VERSION = "3.9"
 
 # API Routing
 [[redirects]]
+  from = "/api/test"
+  to = "/.netlify/functions/test"
+  status = 200
+
+[[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/api"
+  to = "/.netlify/functions/main"
   status = 200
   force = true
 
