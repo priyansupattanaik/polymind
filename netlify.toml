@@ -15,6 +15,7 @@
   status = 200
 
 [[redirects]]
+  # Simple Function Test (functions/simple/simple.py)
   from = "/api/simple"
   to = "/.netlify/functions/simple"
   status = 200
