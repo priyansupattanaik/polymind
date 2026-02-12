@@ -1,43 +1,16 @@
 [build]
-  # AUTOMATION PIPELINE:
-  # 1. Build Frontend (Functions are already in netlify/functions)
-  command = "pip install -r requirements.txt && npm run build"
+  command = "npm run build"
   publish = "dist"
   functions = "functions"
 
-[build.environment]
-  PYTHON_VERSION = "3.9"
-
-# API Routing
-[[redirects]]
-  from = "/api/test"
-  to = "/.netlify/functions/test"
-  status = 200
-
-[[redirects]]
-  # Simple Function Test (functions/simple/simple.py)
-  from = "/api/simple"
-  to = "/.netlify/functions/simple"
-  status = 200
-
-[[redirects]]
-  from = "/api/hello"
-  to = "/.netlify/functions/hello"
-  status = 200
-
-[[redirects]]
-  from = "/api/ping"
-  to = "/.netlify/functions/ping"
-  status = 200
-  force = true
-
+# Main API Handler
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api"
   status = 200
   force = true
 
-# React Routing
+# React Routing (SPA)
 [[redirects]]
   from = "/*"
   to = "/index.html"
