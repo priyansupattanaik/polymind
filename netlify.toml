@@ -5,14 +5,15 @@
   publish = "dist"
   functions = "functions"
 
-[functions]
-  node_bundler = "zisi"
-  included_files = ["functions/**/*.py"]
-
 [build.environment]
   PYTHON_VERSION = "3.9"
 
 # API Routing
+[[redirects]]
+  from = "/api/test"
+  to = "/.netlify/functions/test"
+  status = 200
+
 [[redirects]]
   from = "/api/simple"
   to = "/.netlify/functions/simple"
