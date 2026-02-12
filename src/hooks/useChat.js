@@ -7,7 +7,7 @@ const AVAILABLE_MODELS = [
   { id: 'groq-gptoss', name: 'GPT OSS 20B (Groq)' },
   { id: 'groq-versatile', name: 'Llama 3.3 70B (Groq)' },
   { id: 'nvidia-deepseek', name: 'DeepSeek V3.1 (Nvidia)' },
-  { id: 'or-aurora', name: 'Aurora Alpha (OpenRouter)' },
+  { id: 'or-aurora', name: 'Liquid LFM 2.5 (OpenRouter)' },
   { id: 'or-trinity', name: 'Trinity Large Preview (OpenRouter)' },
   { id: 'or-liquid', name: 'Liquid LFM 2.5 (OpenRouter)' },
   { id: 'or-seed', name: 'Seedream 4.5 (OpenRouter)' },
