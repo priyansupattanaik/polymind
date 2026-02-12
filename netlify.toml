@@ -3,8 +3,7 @@
   # 1. Build Frontend (Functions are already in netlify/functions)
   command = "npm run build"
   publish = "dist"
-  functions = "netlify/functions"
-
+  functions = "functions"
 
 [build.environment]
   PYTHON_VERSION = "3.9"
