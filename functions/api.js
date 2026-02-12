@@ -64,7 +64,7 @@ const CORS_HEADERS = {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
 };
 
-async function callProvider(memberConfig, prompt) {
+async function callProvider(memberConfig, prompt, timeoutMs = 6000) {
     const apiKey = getApiKey(memberConfig.provider);
     if (!apiKey) {
         return { name: memberConfig.name, content: "API Key missing." };
@@ -72,6 +72,10 @@ async function callProvider(memberConfig, prompt) {
 
     const url = getProviderUrl(memberConfig.provider);
     
+    // Explicitly enforce timeout to prevent Netlify 10s hard timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     const payload = {
         model: memberConfig.model,
         messages: [{ role: "user", content: prompt }],
@@ -87,8 +91,11 @@ async function callProvider(memberConfig, prompt) {
                 "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -100,6 +107,11 @@ async function callProvider(memberConfig, prompt) {
         return parseResponse(data, memberConfig);
 
     } catch (e) {
+        clearTimeout(timeoutId);
+        if (e.name === 'AbortError') {
+             console.error(`Timeout for ${memberConfig.name}`);
+             return { name: memberConfig.name, content: `Response timed out (${Math.round(timeoutMs/1000)}s limit).` };
+        }
         console.error(`Connection Error for ${memberConfig.name}: ${e}`);
         return { name: memberConfig.name, content: "Connection error." };
     }
@@ -161,7 +173,7 @@ async function synthesizeResponses(prompt, results) {
         Do not just summarize; provide the best possible answer.
     `;
 
-    const response = await callProvider({ ...CHAIRMAN_CONFIG, provider: "groq" }, synthesisPrompt);
+    const response = await callProvider({ ...CHAIRMAN_CONFIG, provider: "groq" }, synthesisPrompt, 3500);
     return response.content;
 }
 
