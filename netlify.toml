@@ -10,13 +10,8 @@
 
 # API Routing
 [[redirects]]
-  from = "/api/test"
-  to = "/.netlify/functions/test"
-  status = 200
-
-[[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/main"
+  to = "/.netlify/functions/api"
   status = 200
   force = true
 
