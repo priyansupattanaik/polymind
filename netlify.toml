@@ -3,11 +3,11 @@
   # 1. Build Frontend (Functions are already in netlify/functions)
   command = "pip install -r requirements.txt && npm run build"
   publish = "dist"
-  functions = "netlify/functions"
+  functions = "functions"
 
 [functions]
   node_bundler = "zisi"
-  included_files = ["netlify/functions/**/*.py"]
+  included_files = ["functions/**/*.py"]
 
 [build.environment]
   PYTHON_VERSION = "3.9"
