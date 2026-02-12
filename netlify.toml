@@ -1,7 +1,7 @@
 [build]
   # AUTOMATION PIPELINE:
   # 1. Build Frontend (Functions are already in netlify/functions)
-  command = "pip install -r netlify/functions/requirements.txt && npm run build"
+  command = "pip install -r netlify/functions/api/requirements.txt && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
@@ -10,13 +10,8 @@
 
 # API Routing
 [[redirects]]
-  from = "/api/ping"
-  to = "/.netlify/functions/ping"
-  status = 200
-
-[[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/main"
+  to = "/.netlify/functions/api"
   status = 200
   force = true
 
