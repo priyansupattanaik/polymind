@@ -1,7 +1,7 @@
 [build]
   # AUTOMATION PIPELINE:
   # 1. Build Frontend (Functions are already in netlify/functions)
-  command = "npm run build"
+  command = "pip install -r netlify/functions/requirements.txt && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
